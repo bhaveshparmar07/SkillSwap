@@ -1,43 +1,38 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
-import queryClient from '@/lib/queryClient';
-
-// Layouts
 import ProtectedLayout from '@/components/ProtectedLayout';
-
-// Pages
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import Dashboard from '@/pages/Dashboard';
 import Search from '@/pages/Search';
 import Map from '@/pages/Map';
+import Marketplace from '@/pages/Marketplace';
+import Tools from '@/pages/Tools';
+import Profile from '@/pages/Profile';
 
 function App() {
     return (
-        <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-                <BrowserRouter>
-                    <Routes>
-                        {/* Public Routes */}
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
+        <AuthProvider>
+            <Router>
+                <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
 
-                        {/* Protected Routes */}
-                        <Route element={<ProtectedLayout />}>
-                            <Route path="/dashboard" element={<Dashboard />} />
-                            <Route path="/search" element={<Search />} />
-                            <Route path="/map" element={<Map />} />
-                        </Route>
+                    <Route element={<ProtectedLayout />}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/search" element={<Search />} />
+                        <Route path="/map" element={<Map />} />
+                        <Route path="/marketplace" element={<Marketplace />} />
+                        <Route path="/tools" element={<Tools />} />
+                        <Route path="/profile" element={<Profile />} />
+                    </Route>
 
-                        {/* Default Route */}
-                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                    </Routes>
-                </BrowserRouter>
-            </AuthProvider>
-        </QueryClientProvider>
+                    <Route path="/" element={<Navigate to="/login" replace />} />
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+            </Router>
+        </AuthProvider>
     );
 }
 

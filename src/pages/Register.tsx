@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Chrome, UserPlus } from 'lucide-react';
+import { Chrome, UserPlus, Plus, X } from 'lucide-react';
+
+const COMMON_SKILLS = [
+    'Python', 'JavaScript', 'Java', 'C++', 'Calculus',
+    'Linear Algebra', 'Data Structures', 'Machine Learning',
+    'Web Development', 'Mobile Development', 'Physics', 'Chemistry'
+];
 
 export default function Register() {
     const navigate = useNavigate();
@@ -14,6 +20,8 @@ export default function Register() {
         password: '',
         confirmPassword: '',
     });
+    const [skills, setSkills] = useState<string[]>([]);
+    const [customSkill, setCustomSkill] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -27,6 +35,21 @@ export default function Register() {
             setError(err.message || 'Failed to sign in with Google');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const toggleSkill = (skill: string) => {
+        setSkills(prev =>
+            prev.includes(skill)
+                ? prev.filter(s => s !== skill)
+                : [...prev, skill]
+        );
+    };
+
+    const addCustomSkill = () => {
+        if (customSkill.trim() && !skills.includes(customSkill.trim())) {
+            setSkills([...skills, customSkill.trim()]);
+            setCustomSkill('');
         }
     };
 
@@ -57,6 +80,7 @@ export default function Register() {
                 studentId: formData.studentId,
                 university: formData.university,
                 password: formData.password,
+                skills: skills, // Include skills
             });
             navigate('/dashboard');
         } catch (err: any) {
@@ -81,7 +105,7 @@ export default function Register() {
                     <div className="w-20 h-20 gradient-blue rounded-2xl mx-auto mb-4 flex items-center justify-center">
                         <span className="text-white font-bold text-3xl">SS</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900">Join SkillSwitch</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Join SkillSwap</h1>
                     <p className="text-gray-600 mt-2">Create your account and start learning</p>
                 </div>
 
@@ -192,6 +216,72 @@ export default function Register() {
                             placeholder="••••••••"
                             disabled={loading}
                         />
+                    </div>
+
+                    {/* Skills Selection */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Skills (Optional - helps others find you)
+                        </label>
+
+                        {/* Common Skills */}
+                        <div className="flex flex-wrap gap-2 mb-3">
+                            {COMMON_SKILLS.map(skill => (
+                                <button
+                                    key={skill}
+                                    type="button"
+                                    onClick={() => toggleSkill(skill)}
+                                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${skills.includes(skill)
+                                            ? 'bg-primary-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    {skill}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Custom Skill Input */}
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={customSkill}
+                                onChange={(e) => setCustomSkill(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomSkill())}
+                                className="input flex-1 text-sm"
+                                placeholder="Add custom skill..."
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                onClick={addCustomSkill}
+                                className="btn-secondary px-3"
+                                disabled={loading}
+                            >
+                                <Plus size={18} />
+                            </button>
+                        </div>
+
+                        {/* Selected Custom Skills */}
+                        {skills.filter(s => !COMMON_SKILLS.includes(s)).length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {skills.filter(s => !COMMON_SKILLS.includes(s)).map(skill => (
+                                    <div
+                                        key={skill}
+                                        className="flex items-center gap-1 px-3 py-1 bg-primary-600 text-white rounded-full text-sm"
+                                    >
+                                        <span>{skill}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleSkill(skill)}
+                                            className="hover:bg-primary-700 rounded-full p-0.5"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <button

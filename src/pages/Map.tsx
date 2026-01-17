@@ -1,45 +1,148 @@
 import React, { useState, useEffect } from 'react';
 import { APIProvider, Map as GoogleMap, Marker } from '@vis.gl/react-google-maps';
-import { MapPin, Navigation, CheckCircle, XCircle } from 'lucide-react';
+import { MapPin, Navigation, CheckCircle, XCircle, Loader } from 'lucide-react';
 import { logSessionStart } from '@/lib/analytics';
 import type { SafeZone, UserLocation } from '@/types';
 
-// Hardcoded Safe Zones
-const safeZones: SafeZone[] = [
+// Ahmedabad city center coordinates
+const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
+
+// Major colleges in Ahmedabad  with real coordinates
+const AHMEDABAD_COLLEGES: SafeZone[] = [
     {
         id: '1',
-        name: 'Campus Library',
-        description: 'Main university library with study rooms',
-        location: { lat: 37.7749, lng: -122.4194 },
+        name: 'Gujarat University',
+        description: 'Main campus of Gujarat University',
+        location: { lat: 23.0356, lng: 72.5063 },
         radius: 100,
-        type: 'library',
-        openHours: { open: '08:00', close: '22:00' },
+        type: 'campus',
+        openHours: { open: '08:00', close: '18:00' },
     },
     {
         id: '2',
-        name: 'Student Coffee House',
-        description: 'Popular cafe for study groups',
-        location: { lat: 37.7759, lng: -122.4184 },
+        name: 'IIM Ahmedabad',
+        description: 'Indian Institute of Management',
+        location: { lat: 23.1160, lng: 72.5397 },
         radius: 100,
-        type: 'cafe',
-        openHours: { open: '07:00', close: '20:00' },
+        type: 'campus',
+        openHours: { open: '08:00', close: '22:00' },
     },
     {
         id: '3',
-        name: 'Student Center',
-        description: 'Main student activity center',
-        location: { lat: 37.7739, lng: -122.4204 },
+        name: 'CEPT University',
+        description: 'Centre for Environmental Planning and Technology',
+        location: { lat: 23.0387, lng: 72.5490 },
         radius: 100,
         type: 'campus',
-        openHours: { open: '06:00', close: '23:00' },
+        openHours: { open: '08:00', close: '20:00' },
     },
     {
         id: '4',
-        name: 'Study Hall',
-        description: '24/7 study space for students',
-        location: { lat: 37.7769, lng: -122.4174 },
+        name: 'PDPU (Pandit Deendayal Energy University)',
+        description: 'Energy and Technology University',
+        location: { lat: 23.1732, lng: 72.6429 },
         radius: 100,
-        type: 'study_hall',
+        type: 'campus',
+        openHours: { open: '08:00', close: '20:00' },
+    },
+    {
+        id: '5',
+        name: 'Nirma University',
+        description: 'Institute of Technology and Science',
+        location: { lat: 23.1283, lng: 72.5446 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '08:00', close: '20:00' },
+    },
+    {
+        id: '6',
+        name: 'LD College of Engineering',
+        description: 'Leading engineering college',
+        location: { lat: 23.0274, lng: 72.5258 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '08:00', close: '18:00' },
+    },
+    {
+        id: '7',
+        name: 'Ahmedabad University',
+        description: 'Liberal arts and sciences university',
+        location: { lat: 23.1722, lng: 72.6431 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '08:00', close: '20:00' },
+    },
+    {
+        id: '8',
+        name: 'Sardar Patel University',
+        description: 'Vallabh Vidyanagar campus',
+        location: { lat: 22.5518, lng: 72.9263 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '08:00', close: '18:00' },
+    },
+    {
+        id: '9',
+        name: 'Karnavati University',
+        description: 'Modern multidisciplinary university',
+        location: { lat: 23.1225, lng: 72.5430 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '08:00', close: '20:00' },
+    },
+    {
+        id: '10',
+        name: 'GLS University',
+        description: 'Gujarat Law Society University',
+        location: { lat: 23.0321, lng: 72.5409 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '08:00', close: '18:00' },
+    },
+    {
+        id: '11',
+        name: 'Silver Oak University',
+        description: 'Engineering and Technology',
+        location: { lat: 23.0097, lng: 72.5024 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '08:00', close: '18:00' },
+    },
+    {
+        id: '12',
+        name: 'National Institute of Design (NID)',
+        description: 'Premier design institution',
+        location: { lat: 23.0243, lng: 72.5152 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '09:00', close: '18:00' },
+    },
+    {
+        id: '13',
+        name: 'Ganpat University',
+        description: 'Multi-faculty university',
+        location: { lat: 23.4283, lng: 72.5595 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '08:00', close: '18:00' },
+    },
+    {
+        id: '14',
+        name: 'Aditya Silver Oak Institute',
+        description: 'Engineering college',
+        location: { lat: 23.0134, lng: 72.5024 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '08:00', close: '18:00' },
+    },
+    {
+        id: '15',
+        name: 'Indus University',
+        description: 'Modern private university',
+        location: { lat: 23.0799, lng: 72.5052 },
+        radius: 100,
+        type: 'campus',
+        openHours: { open: '08:00', close: '18:00' },
     },
 ];
 
@@ -63,11 +166,12 @@ function calculateDistance(
 }
 
 export default function MapPage() {
+    const [safeZones] = useState<SafeZone[]>(AHMEDABAD_COLLEGES);
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
     const [nearestZone, setNearestZone] = useState<SafeZone | null>(null);
     const [distance, setDistance] = useState<number | null>(null);
     const [locationError, setLocationError] = useState('');
-    const [mapCenter, setMapCenter] = useState({ lat: 37.7749, lng: -122.4194 });
+    const [mapCenter, setMapCenter] = useState(AHMEDABAD_CENTER);
 
     // Get user's location
     useEffect(() => {
@@ -85,9 +189,9 @@ export default function MapPage() {
                 },
                 (error) => {
                     console.error('Geolocation error:', error);
-                    setLocationError('Unable to get your location. Using default location.');
-                    // Use default location (San Francisco)
-                    const defaultLocation: UserLocation = { lat: 37.7749, lng: -122.4194 };
+                    setLocationError('Unable to get your location. Showing Ahmedabad colleges.');
+                    // Use Ahmedabad center as default
+                    const defaultLocation: UserLocation = AHMEDABAD_CENTER;
                     setUserLocation(defaultLocation);
                     findNearestZone(defaultLocation);
                 }
@@ -168,11 +272,11 @@ export default function MapPage() {
             <APIProvider apiKey={apiKey}>
                 <GoogleMap
                     center={mapCenter}
-                    zoom={15}
+                    zoom={12}
                     mapId="skillswitch-map"
                     style={{ width: '100%', height: '100%' }}
                 >
-                    {/* Safe Zone Markers */}
+                    {/* Safe Zone Markers - All Ahmedabad Colleges */}
                     {safeZones.map((zone) => (
                         <Marker
                             key={zone.id}
@@ -193,6 +297,13 @@ export default function MapPage() {
 
             {/* Control Panel */}
             <div className="absolute top-4 left-4 right-4 md:right-auto md:w-96 space-y-4">
+                {/* Info Banner */}
+                <div className="card-glass p-4 bg-blue-50 border border-blue-200">
+                    <p className="text-sm text-blue-800 font-medium">
+                        📍 Showing {safeZones.length} colleges in Ahmedabad as Safe Zones
+                    </p>
+                </div>
+
                 {/* Location Error */}
                 {locationError && (
                     <div className="card-glass p-4 bg-yellow-50 border border-yellow-200">
@@ -204,7 +315,7 @@ export default function MapPage() {
                 <div className="card-glass p-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                         <MapPin size={24} className="text-primary-600" />
-                        Nearest Safe Zone
+                        Nearest College
                     </h2>
 
                     {nearestZone ? (
@@ -273,7 +384,7 @@ export default function MapPage() {
                             </button>
                         </div>
                     ) : (
-                        <p className="text-gray-500">Finding nearest safe zone...</p>
+                        <p className="text-gray-500">Finding nearest college...</p>
                     )}
                 </div>
 

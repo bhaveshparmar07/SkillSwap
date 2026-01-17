@@ -1,7 +1,8 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import Navbar from '@/components/Navbar';
+import Navbar from './Navbar';
+import ChatBot from './ChatBot';
 
 export default function ProtectedLayout() {
     const { user, loading } = useAuth();
@@ -10,7 +11,7 @@ export default function ProtectedLayout() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
                     <p className="text-gray-600">Loading...</p>
                 </div>
             </div>
@@ -27,6 +28,8 @@ export default function ProtectedLayout() {
             <main>
                 <Outlet />
             </main>
+            {/* AI Chatbot - Available on all pages */}
+            <ChatBot />
         </div>
     );
 }

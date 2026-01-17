@@ -23,13 +23,13 @@ export default function CoinBadge({ balance, size = 'md', showShimmer = true }: 
     return (
         <div
             className={`
-        inline-flex items-center gap-2 gradient-gold rounded-full font-bold text-white shadow-lg
+        inline-flex items-center gap-2 gradient-gold rounded-full font-bold text-gray-900 shadow-lg
         ${sizeClasses[size]}
         ${showShimmer ? 'shimmer' : ''}
       `}
         >
-            <Coins size={iconSizes[size]} className="animate-pulse" />
-            <span>{balance.toLocaleString()}</span>
+            <Coins size={iconSizes[size]} className="animate-pulse text-gray-900" />
+            <span className="text-gray-900">{(balance || 0).toLocaleString()}</span>
         </div>
     );
 }

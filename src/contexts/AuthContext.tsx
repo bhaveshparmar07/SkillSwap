@@ -156,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 university: data.university,
                 skillCoins: 100, // Welcome bonus
                 isVerified: false,
-                skills: [],
+                skills: data.skills || [], // Include skills from registration
                 createdAt: new Date(),
             };
 

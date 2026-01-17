@@ -8,7 +8,8 @@ export interface User {
     photoURL?: string;
     skillCoins: number;
     isVerified: boolean;
-    skills?: string[];
+    skills: string[];
+    bio?: string; // User biography/description
     createdAt: Date;
 }
 
@@ -27,6 +28,7 @@ export interface RegisterData {
     studentId: string;
     university: string;
     password: string;
+    skills?: string[];
 }
 
 // Tutor & Matching Types
@@ -148,3 +150,60 @@ export interface Notification {
     createdAt: Date;
     actionUrl?: string;
 }
+
+// Review & Rating Types
+export interface Review {
+    id: string;
+    reviewerId: string;
+    reviewerName: string;
+    reviewerPhoto?: string;
+    revieweeId: string;
+    sessionId: string;
+    type: 'tutor' | 'student';
+    rating: number; // 1-5 stars
+    comment: string;
+    tags: string[]; // ['patient', 'clear', 'helpful']
+    createdAt: Date;
+    helpful: number; // count of helpful votes
+}
+
+// Resource Marketplace Types
+export interface Resource {
+    id: string;
+    tutorId: string;
+    tutorName: string;
+    title: string;
+    description: string;
+    category: 'notes' | 'template' | 'toolkit' | 'guide' | 'code';
+    price: number; // in INR or 0 for free
+    previewImage: string;
+    fileSize: number;
+    downloads: number;
+    rating: number;
+    reviews: number;
+    tags: string[];
+    createdAt: Date;
+}
+
+// Pricing & Transaction Types
+export interface PricingBreakdown {
+    hourlyRate: number;
+    estimatedHours: number;
+    subtotal: number;
+    platformFee: number;
+    platformFeePercentage: number;
+    total: number;
+    tutorReceives: number;
+}
+
+// Affiliate Tool Types
+export interface AffiliateTool {
+    id: string;
+    name: string;
+    description: string;
+    logoURL: string;
+    category: 'design' | 'writing' | 'coding' | 'productivity';
+    affiliateLink: string;
+    bonus: number; // SkillCoins bonus
+}
+

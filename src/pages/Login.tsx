@@ -54,7 +54,7 @@ export default function Login() {
                         <span className="text-white font-bold text-3xl">SS</span>
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-                    <p className="text-gray-600 mt-2">Sign in to continue to SkillSwitch</p>
+                    <p className="text-gray-600 mt-2">Sign in to continue to SkillSwap</p>
                 </div>
 
                 {/* Error Message */}

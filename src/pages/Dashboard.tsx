@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import CoinBadge from '@/components/CoinBadge';
+import { getAllUserSessions, completeSession } from '@/lib/sessions';
+import type { SessionRequest } from '@/lib/sessions';
 import { CheckCircle, AlertCircle, Upload, Wallet, FileCheck, ListTodo } from 'lucide-react';
 
 // Verify ID Modal Component
@@ -115,6 +116,54 @@ function VerifyIDModal({ isOpen, onClose, onVerify }: {
 export default function Dashboard() {
     const { user, refreshUser } = useAuth();
     const [showVerifyModal, setShowVerifyModal] = useState(false);
+    const [sessions, setSessions] = React.useState<SessionRequest[]>([]);
+    const [loading, setLoading] = React.useState(false);
+
+    // Fetch user sessions on mount
+    React.useEffect(() => {
+        if (user) {
+            fetchSessions();
+        }
+    }, [user]);
+
+    const fetchSessions = async () => {
+        if (!user) return;
+        setLoading(true);
+        try {
+            const userSessions = await getAllUserSessions(user.uid);
+            setSessions(userSessions);
+        } catch (error) {
+            console.error('Error fetching sessions:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCompleteSession = async (session: SessionRequest) => {
+        if (!user) return;
+
+        const confirmed = confirm(
+            `Complete session with ${session.tutorName}?\n` +
+            `This will transfer ${session.skillCoinsOffered} SkillCoins to the tutor.`
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await completeSession(
+                session.id!,
+                session.studentId,
+                session.tutorId,
+                session.skillCoinsOffered
+            );
+            alert('Session completed! Coins transferred successfully.');
+            fetchSessions(); // Refresh the list
+            await refreshUser(); // Refresh user data to update coin balance
+        } catch (error) {
+            console.error('Error completing session:', error);
+            alert('Failed to complete session. Please try again.');
+        }
+    };
 
     const handleVerifyID = async (file: File) => {
         // TODO: Integrate with Google Cloud Vision API or backend
@@ -205,23 +254,81 @@ export default function Dashboard() {
                 <div className="card p-6">
                     <div className="flex items-center gap-2 mb-4">
                         <ListTodo size={24} className="text-primary-600" />
-                        <h2 className="text-xl font-bold text-gray-900">Active Requests</h2>
+                        <h2 className="text-xl font-bold text-gray-900">Active Sessions</h2>
                     </div>
 
                     <div className="space-y-3">
-                        {/* Mock data - replace with real data */}
-                        <div className="text-center text-gray-500 py-8">
-                            <p>No active requests</p>
-                            <p className="text-sm mt-2">Start by finding a tutor!</p>
+                        <div className="text-center text-gray-500 py-4">
+                            <p className="text-2xl font-bold">{sessions.filter(s => s.status === 'accepted').length}</p>
+                            <p className="text-sm mt-1">Accepted Sessions</p>
                         </div>
                     </div>
                 </div>
             </div>
 
+            {/* My Sessions Section */}
+            <div className="card-glass p-6 mt-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">My Sessions</h2>
+
+                {loading ? (
+                    <p className="text-gray-500">Loading sessions...</p>
+                ) : sessions.length === 0 ? (
+                    <p className="text-gray-500">No sessions yet. Request help to get started!</p>
+                ) : (
+                    <div className="space-y-4">
+                        {sessions.map((session) => (
+                            <div key={session.id} className="p-4 bg-white/50 rounded-lg border border-gray-200">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <h3 className="font-semibold text-gray-900">
+                                                {session.studentId === user?.uid
+                                                    ? `Help from ${session.tutorName}`
+                                                    : `Helping ${session.studentName}`
+                                                }
+                                            </h3>
+                                            <span className={`px-2 py-1 text-xs rounded-full ${session.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                    session.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                                                        session.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                                                            'bg-red-100 text-red-700'
+                                                }`}>
+                                                {session.status}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-gray-600 mb-1">
+                                            <strong>Skill:</strong> {session.skill}
+                                        </p>
+                                        <p className="text-sm text-gray-600 mb-1">
+                                            <strong>Problem:</strong> {session.problem}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            💰 {session.skillCoinsOffered} SkillCoins
+                                        </p>
+                                    </div>
+
+                                    {/* Complete Button (only for students with accepted sessions) */}
+                                    {session.studentId === user?.uid && session.status === 'accepted' && (
+                                        <button
+                                            onClick={() => handleCompleteSession(session)}
+                                            className="btn-primary text-sm flex items-center gap-2"
+                                        >
+                                            <CheckCircle size={16} />
+                                            Complete
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                 <div className="card p-4 text-center">
-                    <div className="text-3xl font-bold text-primary-600">0</div>
+                    <div className="text-3xl font-bold text-primary-600">
+                        {sessions.filter(s => s.status === 'completed').length}
+                    </div>
                     <div className="text-sm text-gray-600 mt-1">Sessions Completed</div>
                 </div>
 
