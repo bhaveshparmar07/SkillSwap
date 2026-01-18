@@ -1,5 +1,7 @@
 # SkillSwitch Frontend - React + Vite + TypeScript
 
+you can check it out on - https://bskillhouse.netlify.app/
+
 A modern peer-to-peer skills exchange platform for students, built with React, TypeScript, and Google services.
 
 ## 🚀 Features
@@ -184,7 +186,9 @@ MIT
 
 ## 👥 Contributors
 
-Built for the SkillSwitch hackathon project
+- Bhvesh Mulchandani
+- Faisalkhan Pathan
+- Aryan Makawana
 
 ## 🙏 Acknowledgments
 
